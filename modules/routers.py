@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from myset import HEADER, TZ, ROOT_PATH  # Change in prod
+from settings import HEADER, TZ, ROOT_PATH
 from fastapi import APIRouter, Response
 from icalendar import Calendar, Event
 import requests
