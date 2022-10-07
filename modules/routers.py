@@ -19,14 +19,6 @@ def make_calendar(email: str):
         headers=HEADER
     ).json()
 
-    # users = requests.get(
-    #     "https://track.miem.hse.ru/api/v1/users",
-    #     headers=HEADER
-    # ).json()
-    # for user in users:
-    #     if user["username"] == user_slug:
-    #         user_id = user["id"]
-
     for task in tasks:
         if task["assigned_to"] is None:
             continue
