@@ -7,8 +7,9 @@
 - Склонируйте репозиторий
 - Добавьте в `settings.py` информацию о... 
     1. Реверс прокси в `ROOT_PATH`
-    2. Токене тайги в `TAIGA_TOKEN`
-    3. Временной зоне в `TZ`
+    2. Адресе тайги в `TAIGA_URL`
+    3. Токене тайги в `TAIGA_TOKEN`
+    4. Временной зоне в `TZ` (`Europe/Moscow` по умолчанию)
 - Запустите сервис командой
 ```
 sudo docker-compose up -d
@@ -16,6 +17,5 @@ sudo docker-compose up -d
 - Радуйтесь жизни
 
 ## To Do
-- [ ] Bisect search
-- [ ] Make async
-- [ ] Include caches
+- [x] Make async
+- [x] Include caches
