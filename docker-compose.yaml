@@ -5,4 +5,6 @@ services:
     ports:
       - "8717:8717"
   redis:
-    image: redis:alpine
+    image: "redis:alpine"
+    expose:
+      - "6379"
