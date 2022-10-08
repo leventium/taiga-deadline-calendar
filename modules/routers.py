@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import re
 from settings import HEADER, TZ, ROOT_PATH, TAIGA_URL
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response, status
 from icalendar import Calendar, Event
 import aioredis
 import httpx
@@ -33,7 +33,7 @@ async def make_calendar(email: str):
     ical = Calendar()
     user_slug = email.split("@")[0]
     if await red.exists("users"):
-        user_id = json.loads(await red.get("users"))[user_slug]
+        user_id = json.loads(await red.get("users")).get(user_slug)
     else:
         res = await client.get("/api/v1/users", headers=HEADER)
         hash = {elem["username"]: elem["id"] for elem in res.json()}
@@ -42,7 +42,15 @@ async def make_calendar(email: str):
             json.dumps(hash),
             ex=86400
         )
-        user_id = hash[user_slug]
+        user_id = hash.get(user_slug)
+
+    if user_id is None:
+        return Response(
+            content=f"No student with name \"{user_slug}\"",
+            media_type="text/plain",
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
     tasks = await client.get(
         f"/api/v1/tasks?assigned_to={user_id}",
         headers=HEADER
