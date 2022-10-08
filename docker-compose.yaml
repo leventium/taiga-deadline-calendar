@@ -4,3 +4,5 @@ services:
     build: .
     ports:
       - "8717:8717"
+  redis:
+    image: redis:alpine
