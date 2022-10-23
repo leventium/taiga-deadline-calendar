@@ -47,7 +47,7 @@ async def stop():
 
 @router.get("/calendar/person/{email}")
 async def make_calendar(email: str):
-    user_slug = email.split("@")[0]
+    user_slug = email.lower().split("@")[0]
     if await red.exists("users"):
         user_id = json.loads(await red.get("users")).get(user_slug)
     else:
@@ -80,6 +80,7 @@ async def make_calendar(email: str):
 
 @router.get("/calendar/project/{slug}")
 async def make_project_calendar(slug: str):
+    slug = slug.lower()
     if await red.exists("projects"):
         project_id = json.loads(await red.get("projects")).get(slug)
     else:
@@ -94,7 +95,7 @@ async def make_project_calendar(slug: str):
     
     if project_id is None:
         return Response(
-            content=f"No project with name \"{slug}\"",
+            content=f"No project with slug \"{slug}\"",
             media_type="text/plain",
             status_code=status.HTTP_404_NOT_FOUND
         )
