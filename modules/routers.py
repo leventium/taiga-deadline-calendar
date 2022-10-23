@@ -12,6 +12,23 @@ import pytz
 router = APIRouter(prefix=ROOT_PATH.rstrip("/"))
 
 
+def read_tasks(tasks: list) -> bytes:
+    ical = Calendar()
+    for task in tasks:
+        if task["due_date"] is not None:
+            event = Event()
+            due_date = re.match(r"(\d\d\d\d)-(\d\d)-(\d\d)", task["due_date"])
+            event.add("dtstart", datetime(
+                int(due_date[1]),
+                int(due_date[2]),
+                int(due_date[3]),
+                23, 0, tzinfo=pytz.timezone(TZ)
+            ))
+            event.add("summary", task["subject"])
+            ical.add_component(event)
+    return ical.to_ical()
+
+
 @router.on_event("startup")
 async def start():
     global client
@@ -28,9 +45,8 @@ async def stop():
     await red.close()
 
 
-@router.get("/calendar/{email}")
+@router.get("/calendar/person/{email}")
 async def make_calendar(email: str):
-    ical = Calendar()
     user_slug = email.split("@")[0]
     if await red.exists("users"):
         user_id = json.loads(await red.get("users")).get(user_slug)
@@ -56,17 +72,39 @@ async def make_calendar(email: str):
         headers=HEADER
     )
 
-    for task in tasks.json():
-        if task["due_date"] is not None:
-            due_date = re.match(r"(\d\d\d\d)-(\d\d)-(\d\d)", task["due_date"])
-            event = Event()
-            event.add("dtstart", datetime(
-                int(due_date[1]),
-                int(due_date[2]),
-                int(due_date[3]),
-                23, 0, tzinfo=pytz.timezone(TZ)
-            ))
-            event.add("summary", task["subject"])
-            ical.add_component(event)
+    return Response(
+        content=read_tasks(tasks.json()),
+        media_type="text/calendar"
+    )
+
+
+@router.get("/calendar/project/{slug}")
+async def make_project_calendar(slug: str):
+    if await red.exists("projects"):
+        project_id = json.loads(await red.get("projects")).get(slug)
+    else:
+        res = await client.get("/api/v1/projects", headers=HEADER)
+        hash = {elem["slug"]: elem["id"] for elem in res.json()}
+        await red.set(
+            "projects",
+            json.dumps(hash),
+            ex=86400
+        )
+        project_id = hash.get(slug)
     
-    return Response(content=ical.to_ical(), media_type="text/calendar")
+    if project_id is None:
+        return Response(
+            content=f"No project with name \"{slug}\"",
+            media_type="text/plain",
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    
+    tasks = await client.get(
+        f"/api/v1/tasks?project={project_id}",
+        headers=HEADER
+    )
+
+    return Response(
+        content=read_tasks(tasks.json()),
+        media_type="text/calendar"
+    )
