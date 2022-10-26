@@ -5,6 +5,6 @@ TAIGA_TOKEN = ""  # JWT
 TZ = "Europe/Moscow"
 
 HEADER = {
-    "Authorization": "Bearer " + TAIGA_TOKEN,
+    "Authorization": f"Bearer {TAIGA_TOKEN}",
     "x-disable-pagination": "True"
 }
