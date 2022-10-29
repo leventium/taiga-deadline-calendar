@@ -64,7 +64,7 @@ async def stop():
     await red.close()
 
 
-@router.get("/calendar/person/{email}")
+@router.get("/person/{email}")
 async def make_calendar(email: str):
     user_slug = email.lower().split("@")[0]
     if await red.exists("users"):
@@ -97,7 +97,7 @@ async def make_calendar(email: str):
     )
 
 
-@router.get("/calendar/project/{slug}")
+@router.get("/project/{slug}")
 async def make_project_calendar(slug: str):
     slug = slug.lower()
     if await red.exists("projects"):
