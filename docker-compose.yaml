@@ -1,9 +1,14 @@
 version: "3"
+
 services:
   server:
     build: .
     ports:
       - "8717:8717"
+    environment:
+      - TAIGA_URL=
+      - TAIGA_TOKEN=
+#     - TZ=
   redis:
     image: "redis:alpine"
     expose:
