@@ -1,15 +1,34 @@
 from datetime import datetime
 import json
 import re
-from settings import HEADER, TZ, ROOT_PATH, TAIGA_URL
+import os
 from fastapi import APIRouter, Response, status
 from icalendar import Calendar, Event
+from dotenv import load_dotenv
 import aioredis
 import httpx
 import pytz
 
 
-router = APIRouter(prefix=ROOT_PATH.rstrip("/"))
+load_dotenv()
+try:
+    TAIGA_URL = os.environ["TAIGA_URL"]
+    TAIGA_TOKEN = os.environ["TAIGA_TOKEN"]
+except KeyError:
+    print(
+        "--- WARNING ---\n\n"
+        "TAIGA_URL and TAIGA_TOKEN must be specified.\n\n"
+        "--- WARNING ---\n\n"
+    )
+    raise Exception()
+TZ = os.getenv("TZ", "Europe/Moscow")
+HEADER = {
+    "Authorization": f"Bearer {TAIGA_TOKEN}",
+    "x-disable-pagination": "True"
+}
+
+
+router = APIRouter()
 
 
 def read_tasks(tasks: list) -> bytes:
