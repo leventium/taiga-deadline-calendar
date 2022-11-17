@@ -1,0 +1,10 @@
+include:
+  - project: "370/ci-configs"
+    file: /python.yml
+
+stages:
+  - check
+
+pylint:
+  extends: .pylint
+  stage: check
