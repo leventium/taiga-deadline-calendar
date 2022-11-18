@@ -12,6 +12,7 @@ def get_env() -> dict:
     try:
         env["TAIGA_URL"] = os.environ["TAIGA_URL"]
         env["TAIGA_TOKEN"] = os.environ["TAIGA_TOKEN"]
+        env["REDIS_CONNSTRING"] = os.environ["REDIS_CONNSTRING"]
     except KeyError:
         print(
             "--- WARNING ---\n\n"

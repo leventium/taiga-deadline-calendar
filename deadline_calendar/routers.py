@@ -1,5 +1,6 @@
 import json
 from functions import get_env, read_tasks
+from taiga_interface import TaigaInterface
 from fastapi import APIRouter, Response, status
 import aioredis
 import httpx
@@ -11,18 +12,18 @@ router = APIRouter()
 
 @router.on_event("startup")
 async def start():
-    global client
-    global red
-    client = httpx.AsyncClient(base_url=TAIGA_URL.rstrip("/"))
-    red = aioredis.from_url("redis://redis")
+    global taiga_client
+    taiga_client = TaigaInterface(
+        env["TAIGA_URL"],
+        env["TAIGA_TOKEN"],
+        env["REDIS_CONNSTRING"]
+    )
 
 
 @router.on_event("shutdown")
 async def stop():
-    global client
-    global red
-    await client.aclose()
-    await red.close()
+    global taiga_client
+    await taiga_client.close()
 
 # TODO Исправить env и включить интерфейс, вывести константы в отдельные файлы
 
@@ -32,7 +33,7 @@ async def make_calendar(email: str):
     if await red.exists("users"):
         user_id = json.loads(await red.get("users")).get(user_slug)
     else:
-        res = await client.get("/api/v1/users", headers=HEADER)
+        res = await taiga_client.get("/api/v1/users", headers=HEADER)
         hash = {elem["username"]: elem["id"] for elem in res.json()}
         await red.set(
             "users",
@@ -48,7 +49,7 @@ async def make_calendar(email: str):
             status_code=status.HTTP_404_NOT_FOUND
         )
 
-    tasks = await client.get(
+    tasks = await taiga_client.get(
         f"/api/v1/tasks?assigned_to={user_id}",
         headers=HEADER
     )
@@ -65,7 +66,7 @@ async def make_project_calendar(slug: str):
     if await red.exists("projects"):
         project_id = json.loads(await red.get("projects")).get(slug)
     else:
-        res = await client.get("/api/v1/projects", headers=HEADER)
+        res = await taiga_client.get("/api/v1/projects", headers=HEADER)
         hash = {elem["slug"]: elem["id"] for elem in res.json()}
         await red.set(
             "projects",
@@ -81,7 +82,7 @@ async def make_project_calendar(slug: str):
             status_code=status.HTTP_404_NOT_FOUND
         )
     
-    tasks = await client.get(
+    tasks = await taiga_client.get(
         f"/api/v1/tasks?project={project_id}",
         headers=HEADER
     )
