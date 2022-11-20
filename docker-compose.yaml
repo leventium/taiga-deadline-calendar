@@ -4,10 +4,11 @@ services:
   server:
     build: .
     ports:
-      - "8717:8717"
+      - "8000:8000"
     environment:
       - TAIGA_URL=
       - TAIGA_TOKEN=
+      - REDIS_CONNSTRING=
 #     - TZ=
   redis:
     image: "redis:alpine"
