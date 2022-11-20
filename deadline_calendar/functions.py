@@ -16,14 +16,16 @@ def get_env() -> dict:
     except KeyError:
         print(
             "--- WARNING ---\n\n"
-            "TAIGA_URL and TAIGA_TOKEN must be specified.\n\n"
+            "REDIS_CONNSTRING, TAIGA_URL and "
+            "TAIGA_TOKEN must be specified.\n\n"
             "--- WARNING ---\n\n"
         )
         raise Exception()
     env["TZ"] = os.getenv("TZ", "Europe/Moscow")
     return env
 
-def read_tasks(tasks: list) -> bytes:
+
+def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:
     ical = Calendar()
     for task in tasks:
         if task["due_date"] is not None:
@@ -33,7 +35,7 @@ def read_tasks(tasks: list) -> bytes:
                 int(due_date[1]),
                 int(due_date[2]),
                 int(due_date[3]),
-                23, 0, tzinfo=pytz.timezone(TZ)
+                23, 0, tzinfo=pytz.timezone(tz)
             ))
             event.add("summary", task["subject"])
             ical.add_component(event)
