@@ -8,9 +8,7 @@ services:
     environment:
       - TAIGA_URL=
       - TAIGA_TOKEN=
-      - REDIS_CONNSTRING=
-#     - TZ=
+      - REDIS_CONNSTRING=  # redis://host[:port]
+#     - TIME_ZONE=
   redis:
     image: "redis:alpine"
-    expose:
-      - "6379"
