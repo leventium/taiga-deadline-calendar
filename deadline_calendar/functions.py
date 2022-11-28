@@ -2,27 +2,16 @@ import os
 import re
 from datetime import datetime
 from icalendar import Calendar, Event
-from dotenv import load_dotenv
 import pytz
 
 
-def get_env() -> dict:
-    load_dotenv()
-    env = {}
-    try:
-        env["TAIGA_URL"] = os.environ["TAIGA_URL"]
-        env["TAIGA_TOKEN"] = os.environ["TAIGA_TOKEN"]
-        env["REDIS_CONNSTRING"] = os.environ["REDIS_CONNSTRING"]
-    except KeyError:
-        print(
-            "--- WARNING ---\n\n"
-            "REDIS_CONNSTRING, TAIGA_URL and "
-            "TAIGA_TOKEN must be specified.\n\n"
-            "--- WARNING ---\n\n"
-        )
-        raise Exception()
-    env["TZ"] = os.getenv("TZ", "Europe/Moscow")
-    return env
+def check_env(*args: str):
+    for name in args:
+        if os.getenv(name) is None:
+            raise KeyError(
+                f"No environment variable with name {name}. "
+                f"{args} must be specified."
+            )
 
 
 def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:

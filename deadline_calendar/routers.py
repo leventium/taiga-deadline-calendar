@@ -1,10 +1,17 @@
 from responses import NO_STUDENT, NO_PROJECT, serialize_calendar
 from taiga_interface import TaigaInterface
-from functions import get_env
+from functions import check_env
+from dotenv import load_dotenv
 from fastapi import APIRouter
 
 
-env = get_env()
+load_dotenv()
+check_env(
+    "TAIGA_URL",
+    "TAIGA_TOKEN",
+    "REDIS_CONNSTRING"
+)
+DEFAULT_TZ = "Europe/Moscow"
 router = APIRouter()
 
 
@@ -12,9 +19,9 @@ router = APIRouter()
 async def start():
     global taiga_client
     taiga_client = TaigaInterface(
-        env["TAIGA_URL"],
-        env["TAIGA_TOKEN"],
-        env["REDIS_CONNSTRING"]
+        os.environ("TAIGA_URL"),
+        os.environ("TAIGA_TOKEN"),
+        os.environ("REDIS_CONNSTRING")
     )
 
 
@@ -32,7 +39,7 @@ async def make_calendar(email: str):
     if tasks is None:
         return NO_STUDENT
 
-    return serialize_calendar(env["TZ"], tasks)
+    return serialize_calendar(os.getenv("TIME_ZONE", DEFAULT_TZ), tasks)
 
 
 @router.get("/project/{slug}")
@@ -43,4 +50,4 @@ async def make_project_calendar(slug: str):
     if tasks is None:
         return NO_PROJECT
 
-    return serialize_calendar(env["TZ"], tasks)
+    return serialize_calendar(os.getenv("TIME_ZONE", DEFAULT_TZ), tasks)
