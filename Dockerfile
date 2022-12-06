@@ -6,6 +6,6 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./deadline_calendar .
+COPY deadline_calendar/ .
 
 CMD ["python", "main.py"]
