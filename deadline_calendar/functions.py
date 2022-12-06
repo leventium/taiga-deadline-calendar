@@ -5,6 +5,9 @@ from icalendar import Calendar, Event
 import pytz
 
 
+DATE_PATTERN = re.compile(r"(\d\d\d\d)-(\d\d)-(\d\d)")
+
+
 def check_env(*args: str):
     for name in args:
         if os.getenv(name) is None:
@@ -19,7 +22,7 @@ def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:
     for task in tasks:
         if task["due_date"] is not None:
             event = Event()
-            due_date = re.match(r"(\d\d\d\d)-(\d\d)-(\d\d)", task["due_date"])
+            due_date = DATE_PATTERN.match(task["due_date"])
             event.add("dtstart", datetime(
                 int(due_date[1]),
                 int(due_date[2]),
@@ -29,3 +32,13 @@ def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:
             event.add("summary", task["subject"])
             ical.add_component(event)
     return ical.to_ical()
+
+
+async def get_from_cache(redis, taiga_client, role: str, slug: str):
+    if await redis.exists(role):
+        obj_id = await redis.hget(role, slug)
+        return int(obj_id) if obj_id is not None else None
+    obj_hash = await taiga_client._get_id(role, slug)
+    await redis.hset(role, mapping=obj_hash)
+    await redis.expire(role, 86400)
+    return obj_hash.get(slug)

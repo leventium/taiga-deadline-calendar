@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI
-from modules.routers import router
+from routers import router
 import uvicorn
 
 

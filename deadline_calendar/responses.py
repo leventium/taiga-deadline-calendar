@@ -1,8 +1,9 @@
 from functions import convert_tasks_to_calendar
 from fastapi import Response, status
+from fastapi.responses import JSONResponse
 
 
-NO_STUDENT = Response(
+NO_STUDENT = JSONResponse(
     status_code=status.HTTP_404_NOT_FOUND,
     content={
         "error": {
@@ -12,7 +13,7 @@ NO_STUDENT = Response(
     media_type="application/json"
 )
 
-NO_PROJECT = Response(
+NO_PROJECT = JSONResponse(
     status_code=status.HTTP_404_NOT_FOUND,
     content={
         "error": {
@@ -23,8 +24,8 @@ NO_PROJECT = Response(
 )
 
 
-def serialize_calendar(tz: str, tasks: list[dict]) -> Response:
+def serialize_calendar(time_zone: str, tasks: list[dict]) -> Response:
     return Response(
-        content=convert_tasks_to_calendar(tz, tasks),
+        content=convert_tasks_to_calendar(time_zone, tasks),
         media_type="text/calendar"
     )
