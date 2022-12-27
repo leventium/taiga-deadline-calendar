@@ -6,5 +6,7 @@ stages:
   - check
 
 pylint:
+  variables:
+    LINT_PATH: ./deadline_calendar
   extends: .pylint
   stage: check
