@@ -1,0 +1,3 @@
+[MESSAGES CONTROL]
+# C0116 -- function docstring
+disable=C0116
