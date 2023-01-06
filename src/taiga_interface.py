@@ -1,8 +1,14 @@
+"""
+Module that provides high-level interface of taiga api.
+"""
 # import aioredis
 import httpx
 
 
 class TaigaInterface:
+    """
+    Class of interface, represents a instance of taiga.
+    """
     ROLES = {
         "projects": {
             "taiga_sort": "project",
@@ -14,7 +20,7 @@ class TaigaInterface:
         }
     }
 
-    def __init__(self, base_url: str, token: str, redis_addres: str):
+    def __init__(self, base_url: str, token: str):
         self.client = httpx.AsyncClient(
             base_url=base_url,
             headers={
@@ -24,12 +30,12 @@ class TaigaInterface:
         )
         # self.redis = aioredis.from_url(redis_addres, decode_responses=True)
 
-    async def _get_id(self, role: str, slug: str) -> dict:
+    async def get_id(self, role: str) -> dict:
         """
-        Общая функция для получание id объекта тайги,
-        используется в других функциях которые указывают
-        необходимую сущность при вызове в role.
-        slug - имя сущность id которой нужно получить.
+        Общая функция для получание списка объектов тайги в формате {name: id},
+        позволяет в дальнейшем получить id объекта имея его имя.
+        (Удобно кэшировать :) )
+        role -- тип объекта для которого нужно получить список.
         """
         # if await self.redis.exists(role):
         #     return await self.redis.hget(role, slug)
@@ -42,11 +48,11 @@ class TaigaInterface:
         # await self.redis.expire(role, 86400)
         return objects
 
-    async def get_project_id(self, slug: str) -> dict:
-        return await self._get_id("projects", slug)
+    async def get_project_id(self) -> dict:
+        return await self.get_id("projects")
 
-    async def get_user_id(self, slug: str) -> dict:
-        return await self._get_id("users", slug)
+    async def get_user_id(self) -> dict:
+        return await self.get_id("users")
 
     async def __get_tasks(self, role: str, object_id: int) -> list[dict]:
         # object_id = self.__get_id(role, slug)

@@ -1,8 +1,12 @@
+"""
+Module that contains clear functions with
+environment checking, serialization, caching.
+"""
 import os
 import re
 from datetime import datetime
-from icalendar import Calendar, Event
 import pytz
+from icalendar import Calendar, Event
 
 
 DATE_PATTERN = re.compile(r"(\d\d\d\d)-(\d\d)-(\d\d)")
@@ -17,7 +21,7 @@ def check_env(*args: str):
             )
 
 
-def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:
+def convert_tasks_to_calendar(time_zone: str, tasks: list[dict]) -> bytes:
     ical = Calendar()
     for task in tasks:
         if task["due_date"] is not None:
@@ -27,7 +31,7 @@ def convert_tasks_to_calendar(tz: str, tasks: list[dict]) -> bytes:
                 int(due_date[1]),
                 int(due_date[2]),
                 int(due_date[3]),
-                23, 0, tzinfo=pytz.timezone(tz)
+                23, 0, tzinfo=pytz.timezone(time_zone)
             ))
             event.add("summary", task["subject"])
             ical.add_component(event)
@@ -38,7 +42,7 @@ async def get_from_cache(redis, taiga_client, role: str, slug: str):
     if await redis.exists(role):
         obj_id = await redis.hget(role, slug)
         return int(obj_id) if obj_id is not None else None
-    obj_hash = await taiga_client._get_id(role, slug)
+    obj_hash = await taiga_client.get_id(role)
     await redis.hset(role, mapping=obj_hash)
     await redis.expire(role, 86400)
     return obj_hash.get(slug)
