@@ -1,14 +1,26 @@
+"""
+File with tests for functions module.
+"""
 import os
 import json
 import pytest
 import functions
 
 
-class TaigaClientMock:
+class TaigaClientMock:  # pylint: disable=too-few-public-methods
+    """
+    Mock for taiga_interface class.
+    """
     storage = {
+        "users": {
+            "limiroshnichenko": 450,
+            "ivpostnikov": 28,
+            "adpiskunov": 29
+        },
         "projects": {
             "239": 2979,
-            "370": 18
+            "370": 18,
+
         }
     }
 
@@ -17,6 +29,9 @@ class TaigaClientMock:
 
 
 class RedisMock:
+    """
+    Mock for Redis class.
+    """
     storage = {
         "users": {
             "limiroshnichenko": 450,
@@ -27,18 +42,18 @@ class RedisMock:
         if key in self.storage:
             return 1
         return 0
-    
+
     async def hget(self, key: str, slug: str) -> int:
         return self.storage.get(key).get(slug)
-    
+
     async def hset(self, key, mapping):
         pass
 
-    async def expire(self, key, time):
+    async def delete(self, role):
         pass
 
 
-data = json.loads("""
+DATA = json.loads("""
 [
     {
         "due_date": "2022-03-02",
@@ -54,7 +69,7 @@ data = json.loads("""
     }
 ]
 """)
-expected = """
+EXPECTED = """
 BEGIN:VCALENDAR
 BEGIN:VEVENT
 SUMMARY:Ошибки при отправке часов в кабинет
@@ -68,23 +83,23 @@ END:VCALENDAR
 """.strip()
 
 
-def test_checkenv_GiveExistingName_pass():
+def test_checkenv_giveexistingname_pass():
     os.environ["EXISTING_NAME"] = "10"
     functions.check_env("EXISTING_NAME")
 
 
-def test_checkenv_GiveNotExistingName_RaisesError():
+def test_checkenv_givenotexistingname_raiseserror():
     with pytest.raises(KeyError):
         functions.check_env("NOT_EXISTING_NAME")
 
 
-def test_converttaskstocalendar_GiveDict_ReturnCalendar():
-    func_result = functions.convert_tasks_to_calendar("Europe/Moscow", data)
-    assert func_result.decode().strip().replace("\r", "") == expected
+def test_converttaskstocalendar_givedict_returncalendar():
+    func_result = functions.convert_tasks_to_calendar("Europe/Moscow", DATA)
+    assert func_result.decode().strip().replace("\r", "") == EXPECTED
 
 
 @pytest.mark.asyncio
-async def test_getfromcache_GiveCachedRoleExistedName_ReturnId():
+async def test_getfromcache_givecachedroleexistedname_returnid():
     result = await functions.get_from_cache(
         RedisMock(),
         TaigaClientMock(),
@@ -95,7 +110,7 @@ async def test_getfromcache_GiveCachedRoleExistedName_ReturnId():
 
 
 @pytest.mark.asyncio
-async def test_getfromcache_GiveNotCachedRoleExistedName_ReturnId():
+async def test_getfromcache_givenotcachedroleexistedname_returnid():
     result = await functions.get_from_cache(
         RedisMock(),
         TaigaClientMock(),
@@ -106,22 +121,33 @@ async def test_getfromcache_GiveNotCachedRoleExistedName_ReturnId():
 
 
 @pytest.mark.asyncio
-async def test_getfromcache_GiveCachedRoleNotExistedName_ReturnNone():
+async def test_getgromcache_givenotcachedobjectbutesisted_refreshcacheretid():
     result = await functions.get_from_cache(
         RedisMock(),
         TaigaClientMock(),
         "users",
         "adpiskunov"
     )
-    assert result == None
+    assert result == 29
 
 
 @pytest.mark.asyncio
-async def test_getfromcache_GiveNotCachedRoleNotExistedName_ReturnNone():
+async def test_getfromcache_givenotcachedrolenotexistedname_returnnone():
     result = await functions.get_from_cache(
         RedisMock(),
         TaigaClientMock(),
         "projects",
         "19102"
     )
-    assert result == None
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_getgromcache_givenotcachedobjectnotesisted_returnnone():
+    result = await functions.get_from_cache(
+        RedisMock(),
+        TaigaClientMock(),
+        "users",
+        "abobus"
+    )
+    assert result is None

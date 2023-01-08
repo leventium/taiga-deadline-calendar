@@ -41,8 +41,12 @@ def convert_tasks_to_calendar(time_zone: str, tasks: list[dict]) -> bytes:
 async def get_from_cache(redis, taiga_client, role: str, slug: str):
     if await redis.exists(role):
         obj_id = await redis.hget(role, slug)
-        return int(obj_id) if obj_id is not None else None
+        if obj_id is None:
+            obj_hash = await taiga_client.get_id(role)
+            await redis.delete(role)
+            await redis.hset(role, mapping=obj_hash)
+            return obj_hash.get(slug)
+        return int(obj_id)
     obj_hash = await taiga_client.get_id(role)
     await redis.hset(role, mapping=obj_hash)
-    await redis.expire(role, 86400)
     return obj_hash.get(slug)
