@@ -28,12 +28,11 @@ class TaigaInterface:
             }
         )
 
-    async def get_id(self, role: str) -> dict:
+    async def __get_objects(self, role: str) -> dict:
         """
         Общая функция для получание списка объектов тайги в формате {name: id},
         позволяет в дальнейшем получить id объекта имея его имя.
-        (Удобно кэшировать :) )
-        role -- тип объекта для которого нужно получить список.
+        role -- тип объекта для которого нужно получить список
         """
         res = await self.client.get(f"/api/v1/{role}")
         objects = {
@@ -42,13 +41,18 @@ class TaigaInterface:
         }
         return objects
 
-    async def get_project_id(self) -> dict:
-        return await self.get_id("projects")
+    async def get_projects(self) -> dict:
+        return await self.__get_objects("projects")
 
-    async def get_user_id(self) -> dict:
-        return await self.get_id("users")
+    async def get_users(self) -> dict:
+        return await self.__get_objects("users")
 
     async def __get_tasks(self, role: str, object_id: int) -> list[dict]:
+        """
+        Функция позволяющая получить все задачи заданного объекта.
+        role -- тип объекта
+        object_id -- id объекта
+        """
         tasks = await self.client.get(
             "/api/v1/tasks",
             params={self.ROLES[role]["taiga_sort"]: object_id}

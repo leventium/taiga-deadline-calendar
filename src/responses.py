@@ -3,7 +3,7 @@ Responces constants used in enpoints.
 """
 from fastapi import Response, status
 from fastapi.responses import JSONResponse
-from functions import convert_tasks_to_calendar
+from formatting import convert_tasks_to_calendar
 
 
 NO_STUDENT = JSONResponse(
