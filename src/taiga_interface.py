@@ -1,7 +1,6 @@
 """
 Module that provides high-level interface of taiga api.
 """
-# import aioredis
 import httpx
 
 
@@ -28,7 +27,6 @@ class TaigaInterface:
                 "x-disable-pagination": "True"
             }
         )
-        # self.redis = aioredis.from_url(redis_addres, decode_responses=True)
 
     async def get_id(self, role: str) -> dict:
         """
@@ -37,15 +35,11 @@ class TaigaInterface:
         (Удобно кэшировать :) )
         role -- тип объекта для которого нужно получить список.
         """
-        # if await self.redis.exists(role):
-        #     return await self.redis.hget(role, slug)
         res = await self.client.get(f"/api/v1/{role}")
         objects = {
             elem[self.ROLES[role]["string_id"]]: elem["id"]
             for elem in res.json()
         }
-        # await self.redis.hset(role, mapping=objects)
-        # await self.redis.expire(role, 86400)
         return objects
 
     async def get_project_id(self) -> dict:
@@ -55,9 +49,6 @@ class TaigaInterface:
         return await self.get_id("users")
 
     async def __get_tasks(self, role: str, object_id: int) -> list[dict]:
-        # object_id = self.__get_id(role, slug)
-        # if object_id is None:
-        #     return None
         tasks = await self.client.get(
             "/api/v1/tasks",
             params={self.ROLES[role]["taiga_sort"]: object_id}
@@ -72,4 +63,3 @@ class TaigaInterface:
 
     async def close(self):
         await self.client.aclose()
-        # await self.redis.close()
