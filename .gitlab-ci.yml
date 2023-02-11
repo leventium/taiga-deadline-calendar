@@ -13,5 +13,7 @@ pylint:
   stage: check
 
 pytest:
+  variables:
+    TEST_PATH: ./
   extends: .pytest
   stage: test
