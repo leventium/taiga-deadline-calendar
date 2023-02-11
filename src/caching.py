@@ -5,6 +5,9 @@ import aioredis
 
 
 class Cache:
+    """
+    Cache class that communicates with cache service.
+    """
     def __init__(self, connstring: str) -> None:
         self.redis = aioredis.from_url(connstring)
 
