@@ -1,11 +1,12 @@
-from caching import Cache
-from taiga_interface import TaigaInterface
+"""
+Module with fuctions that use cache.
+"""
 
 
 async def get_user_from_cache_or_refresh(
-            cache: Cache,
-            taiga_client: TaigaInterface,
-            slug: str):
+            cache,
+            taiga_client,
+            slug: str) -> int:
     user_id = await cache.get_user(slug)
     if user_id is None:
         users_hash = await taiga_client.get_users()
@@ -15,9 +16,9 @@ async def get_user_from_cache_or_refresh(
 
 
 async def get_project_from_cache_or_refresh(
-            cache: Cache,
-            taiga_client: TaigaInterface,
-            slug: str):
+            cache,
+            taiga_client,
+            slug: str) -> int:
     project_id = await cache.get_project(slug)
     if project_id is None:
         projects_hash = await taiga_client.get_projects()

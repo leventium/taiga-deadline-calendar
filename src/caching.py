@@ -1,3 +1,6 @@
+"""
+Module with Cache class that provides communication with Redis.
+"""
 import aioredis
 
 
