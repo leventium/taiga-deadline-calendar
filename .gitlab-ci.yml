@@ -1,0 +1,19 @@
+include:
+  - project: "370/ci-configs"
+    file: /python.yml
+
+stages:
+  - check
+  - test
+
+pylint:
+  variables:
+    LINT_PATH: ./src
+  extends: .pylint
+  stage: check
+
+pytest:
+  variables:
+    TEST_PATH: ./
+  extends: .pytest
+  stage: test
