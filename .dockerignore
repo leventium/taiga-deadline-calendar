@@ -1,6 +1,7 @@
 .venv/
 .git/
-__pycache__/
-modules/__pycache__/
+**/__pycache__/
+**/.pytest_cache
+src/tests
 .gitignore
 README.md

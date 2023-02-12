@@ -4,7 +4,16 @@ include:
 
 stages:
   - check
+  - test
 
 pylint:
+  variables:
+    LINT_PATH: ./src
   extends: .pylint
   stage: check
+
+pytest:
+  variables:
+    TEST_PATH: ./
+  extends: .pytest
+  stage: test
